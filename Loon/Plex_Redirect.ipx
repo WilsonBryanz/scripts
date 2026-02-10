@@ -1,6 +1,6 @@
 #!name=Plex改CF直连
 #!desc=将 Plex 域名重定向至新域名，并强制双向CF直连，不消耗代理流量。
-#!author=OpsEngineer
+#!author=🅱️𝓻𝔂𝓪𝓷
 #!homepage=https://github.com/WilsonBryanz/scripts/edit/main/Loon
 #!icon=https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Plex.png
 #!date=2026-02-10
@@ -20,3 +20,4 @@ DOMAIN,plex.2699699.xyz,DIRECT
 # 解密旧域名 HTTPS 流量，以便执行 Rewrite
 
 hostname = plex.20120714.xyz
+
