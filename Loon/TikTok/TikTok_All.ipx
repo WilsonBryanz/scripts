@@ -1,23 +1,22 @@
-#!name=TikTok分流
-#!desc=集成 QUIC 精准阻断、核心域名路由分流，以及基于策略组节点的动态智能换区 JS 脚本。
+#!name=TikTok 终极路由与动态换区
+#!desc=集成 QUIC 精准阻断、核心路由分流，及智能换区脚本。请在下方【代理指向的策略】中，将 TikTok_Proxy 绑定到你的 TikTok 节点策略组。
 #!icon=https://raw.githubusercontent.com/chxm1023/Script_X/main/icon/TikTok.png
-#!author=@WilsonBryanz
+#!author=WilsonBryanz
 
 [Rule]
-# 👇--- 1 精准阻断 TikTok QUIC (仅拦截 UDP 443，防真实 IP 泄露) ---
+# 👇--- 1 精准阻断 TikTok QUIC (仅拦截 UDP 443，绝不阻断 DNS 与 TCP) ---
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-KEYWORD,tiktok)),REJECT-NO-DROP
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,byteoversea.com)),REJECT-NO-DROP
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,ibyteimg.com)),REJECT-NO-DROP
 
 # 👇--- 2 核心 API 正常走代理策略组 ---
-DOMAIN-SUFFIX,tiktokv.com,TikTok
-DOMAIN-SUFFIX,byteoversea.com,TikTok
-DOMAIN-SUFFIX,ibyteimg.com,TikTok
-DOMAIN-SUFFIX,tiktokcdn.com,TikTok
-DOMAIN-KEYWORD,tiktok,TikTok
-DOMAIN-SUFFIX,tiktok-row.net,TikTok
+DOMAIN-SUFFIX,tiktokv.com,TikTok_Proxy
+DOMAIN-SUFFIX,byteoversea.com,TikTok_Proxy
+DOMAIN-SUFFIX,ibyteimg.com,TikTok_Proxy
+DOMAIN-SUFFIX,tiktokcdn.com,TikTok_Proxy
+DOMAIN-KEYWORD,tiktok,TikTok_Proxy
+DOMAIN-SUFFIX,tiktok-row.net,TikTok_Proxy
 
 [Script]
-# 👇--- 动态匹配节点智能换区 (新、美、日、台、欧) ---
-# ⚠️ 请将此处的 script-path 替换为你部署在 Vercel 或 Github 的 JS 直链
-http-request ^https?:\/\/(.+\.)?(tiktokv|byteoversea|tik-tokapi)\.com\/.+ script-path=github.com/WilsonBryanz/scripts/raw/refs/heads/main/Loon/TikTok/TikTok_Switcher.js, requires-body=false, tag=TikTok智能换区
+# 👇--- 绝对不会 404 的 TikTok 远程动态重写 (根据节点切换地区，新、美、日、台、欧) ---
+http-request ^https?:\/\/(.+\.)?(tiktokv|byteoversea|tik-tokapi)\.com\/.+ script-path=https://github.com/WilsonBryanz/scripts/raw/refs/heads/main/Loon/TikTok/TikTok_Switcher.js, requires-body=false, tag=TikTok
