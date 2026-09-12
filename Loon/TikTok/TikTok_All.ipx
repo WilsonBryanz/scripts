@@ -19,4 +19,4 @@ DOMAIN-SUFFIX,tiktok-row.net,TikTok_Proxy
 
 [Script]
 # 👇--- 绝对不会 404 的 TikTok 远程动态重写 (根据节点切换地区，新、美、日、台、欧) ---
-http-request ^https?:\/\/(.+\.)?(tiktokv|byteoversea|tik-tokapi)\.com\/.+ script-path=https://github.com/WilsonBryanz/scripts/raw/refs/heads/main/Loon/TikTok/TikTok_Switcher.js, requires-body=false, tag=TikTok
+http-request ^https?:\/\/(.+\.)?(tiktokv|byteoversea|tik-tokapi)\.com\/.+ script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/refs/heads/main/Loon/TikTok/TikTok_Switcher.js, requires-body=false, tag=TikTok
