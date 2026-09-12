@@ -1,7 +1,7 @@
 #!name=TikTok分流
 #!desc=集成 QUIC 精准阻断、核心域名路由分流，以及基于策略组节点的动态智能换区 JS 脚本。
 #!icon=https://raw.githubusercontent.com/chxm1023/Script_X/main/icon/TikTok.png
-#!author=WilsonBryanz
+#!author=@WilsonBryanz
 
 [Rule]
 # 👇--- 1 精准阻断 TikTok QUIC (仅拦截 UDP 443，防真实 IP 泄露) ---
