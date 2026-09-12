@@ -19,4 +19,4 @@ DOMAIN-SUFFIX,tiktok-row.net,TikTok
 [Script]
 # 👇--- 动态匹配节点智能换区 (新、美、日、台、欧) ---
 # ⚠️ 请将此处的 script-path 替换为你部署在 Vercel 或 Github 的 JS 直链
-http-request ^https?:\/\/(.+\.)?(tiktokv|byteoversea|tik-tokapi)\.com\/.+ script-path=github.com/WilsonBryanz/scripts/raw/refs/heads/main/Loon/TikTok/tiktok_switcher.js, requires-body=false, tag=TikTok智能换区
+http-request ^https?:\/\/(.+\.)?(tiktokv|byteoversea|tik-tokapi)\.com\/.+ script-path=github.com/WilsonBryanz/scripts/raw/refs/heads/main/Loon/TikTok/TikTok_Switcher.js, requires-body=false, tag=TikTok智能换区
