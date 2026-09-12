@@ -34,5 +34,5 @@ DOMAIN-KEYWORD,tiktok,TikTok_Select_Node
 DOMAIN-KEYWORD,musical.ly,TikTok_Select_Node
 
 [Script]
-# 👇--- 绝对不会 404 的 TikTok 远程动态重写 (支持 新、美、日、台、韩 KR、英 UK 自动切换) ---
+# 👇--- 绝对不会 404 的 TikTok 远程动态重写 (支持 新、美、日、台、韩、英、欧盟 自动切换) ---
 http-request ^https?:\/\/(.+\.)?(tiktokv|byteoversea|tik-tokapi)\.com\/.+ script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/refs/heads/main/Loon/TikTok/TikTok_Switcher.js, requires-body=false, tag=TikTok
