@@ -1,6 +1,6 @@
 /**
  * @name TikTok 智能换区 (节点联动版)
- * @description 根据 Proxy Group 选中的节点，自动切换 新、美、日、台、韩(KR)、英(UK) 等地区
+ * @description 根据 Proxy Group 选中的节点，自动切换 新、美、日、台、韩、英、欧洲等地区
  * @author WilsonBryanz
  * @version 1.1.1
  * @script-type http-request
