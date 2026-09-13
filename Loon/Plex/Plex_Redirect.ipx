@@ -2,7 +2,7 @@
 #!desc=将 Plex 域名重定向至新域名，并强制双向CF直连，不消耗代理流量。
 #!author=🅱️𝓻𝔂𝓪𝓷
 #!homepage=https://github.com/WilsonBryanz/scripts/edit/main/Loon
-#!icon=https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Plex.png
+#!icon=https://raw.githubusercontent.com/WilsonBryanz/scripts/refs/heads/main/icon/apps/Plex.png
 #!date=2026-02-10
 
 [Rule]
