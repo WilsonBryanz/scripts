@@ -1,7 +1,7 @@
 #!name=TikTok 终极路由与动态换区
 #!desc=集成 QUIC 阻断、可莉+blackmatrix7 全量分流及换区脚本。请将下方 PROXY 绑定到 TikTok 策略组。
 #!icon=https://raw.githubusercontent.com/chxm1023/Script_X/main/icon/TikTok.png
-#!raw-url=https://github.com/WilsonBryanz/scripts/edit/main/Loon/TikTok/TikTok.ipx
+#!raw-url=https://raw.githubusercontent.com/WilsonBryanz/scripts/refs/heads/main/Loon/TikTok/TikTok.ipx
 #!author=WilsonBryanz[https://github.com/WilsonBryanz/scripts]
 
 [Rule]
@@ -11,10 +11,10 @@ AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,byteoversea.com)),REJECT-NO-D
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,ibyteimg.com)),REJECT-NO-DROP
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,snssdk.com)),REJECT-NO-DROP
 
-# 👇--- 2 应用层特征兜底 (提取自 blackmatrix7，强制接管一切携带 TikTok 标识的请求) ---
+# 👇--- 2 应用层特征兜底 (强制接管一切携带 TikTok 标识的请求) ---
 USER-AGENT,TikTok*,PROXY
 
-# 👇--- 3 究极融合分流库 (可莉全量 + blackmatrix7 独家 API/WebView/特效节点) ---
+# 👇--- 3 分流库 (集成独家 API/WebView/特效节点) ---
 DOMAIN,api.snapkit.com,PROXY
 DOMAIN,cocacola.co.jp,PROXY
 DOMAIN,courses.snapsolve.com,PROXY
@@ -96,13 +96,10 @@ DOMAIN-SUFFIX,ttoverseaus.net,PROXY
 DOMAIN-SUFFIX,ttwebview.com,PROXY
 DOMAIN-SUFFIX,ttwstatic.com,PROXY
 DOMAIN-SUFFIX,tzvbfs.com,PROXY
-DOMAIN-KEYWORD,bytedance.map.,PROXY
-DOMAIN-KEYWORD,musical.ly.,PROXY
+DOMAIN-KEYWORD,bytedance.map,PROXY
 DOMAIN-KEYWORD,tiktokcdn-,PROXY
-DOMAIN-KEYWORD,tiktokcdn.com.,PROXY
-DOMAIN-KEYWORD,tiktokv.com.,PROXY
-DOMAIN-KEYWORD,ttcdn-tos.,PROXY
-DOMAIN-KEYWORD,ttlivecdn.com.,PROXY
+DOMAIN-KEYWORD,ttcdn-tos,PROXY
+DOMAIN-KEYWORD,ttlivecdn.com,PROXY
 IP-ASN,11983,PROXY,no-resolve
 IP-ASN,138699,PROXY,no-resolve
 
