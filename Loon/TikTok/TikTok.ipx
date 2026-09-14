@@ -1,5 +1,5 @@
 #!name=TikTok 终极路由与动态换区
-#!desc=集成 QUIC 精准阻断、全量可莉路由分流及智能换区脚本。请在下方【代理指向的策略】中将 PROXY 绑定到你的 TikTok 节点策略组。
+#!desc=集成 QUIC 阻断、可莉+blackmatrix7 全量分流及换区脚本。请将下方 PROXY 绑定到 TikTok 策略组。
 #!icon=https://raw.githubusercontent.com/chxm1023/Script_X/main/icon/TikTok.png
 #!raw-url=https://github.com/WilsonBryanz/scripts/edit/main/Loon/TikTok/TikTok.ipx
 #!author=WilsonBryanz[https://github.com/WilsonBryanz/scripts]
@@ -11,13 +11,17 @@ AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,byteoversea.com)),REJECT-NO-D
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,ibyteimg.com)),REJECT-NO-DROP
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,snssdk.com)),REJECT-NO-DROP
 
-# 👇--- 2 全量 TikTok 路由分流 (统一映射至 PROXY) ---
+# 👇--- 2 应用层特征兜底 (提取自 blackmatrix7，强制接管一切携带 TikTok 标识的请求) ---
+USER-AGENT,TikTok*,PROXY
+
+# 👇--- 3 究极融合分流库 (可莉全量 + blackmatrix7 独家 API/WebView/特效节点) ---
 DOMAIN,api.snapkit.com,PROXY
 DOMAIN,cocacola.co.jp,PROXY
 DOMAIN,courses.snapsolve.com,PROXY
 DOMAIN,engagements.appsflyer.com,PROXY
 DOMAIN,lf16-campaign.ttlstatic.com,PROXY
 DOMAIN,lf16-csp.oecstatic.com,PROXY
+DOMAIN,lf16-effectcdn.byteeffecttos-g.com,PROXY
 DOMAIN,lf16-pkgcdn.pitaya-clientai.com,PROXY
 DOMAIN,lf16-scmcdn.oecstatic.com,PROXY
 DOMAIN,lf19-csp.oecstatic.com,PROXY
@@ -27,10 +31,12 @@ DOMAIN,musically-alternate.app.link,PROXY
 DOMAIN,musically.app.link,PROXY
 DOMAIN,p1-tt-ipv6.byteimg.com,PROXY
 DOMAIN,p1-tt.byteimg.com,PROXY
+DOMAIN,p16-tiktokcdn-com.akamaized.net,PROXY
 DOMAIN,p26-tt.byteimg.com,PROXY
 DOMAIN,p3-tt-ipv6.byteimg.com,PROXY
 DOMAIN,p9-tt.byteimg.com,PROXY
 DOMAIN,roovza-launches.appsflyersdk.com,PROXY
+DOMAIN,trae-api-sg.mchost.guru,PROXY
 DOMAIN-SUFFIX,bytedance.com,PROXY
 DOMAIN-SUFFIX,bytedance.net,PROXY
 DOMAIN-SUFFIX,bytedapm.com,PROXY
@@ -42,6 +48,7 @@ DOMAIN-SUFFIX,byteicdn.com,PROXY
 DOMAIN-SUFFIX,byteigtm.com,PROXY
 DOMAIN-SUFFIX,byteintl.com,PROXY
 DOMAIN-SUFFIX,byteintl.net,PROXY
+DOMAIN-SUFFIX,byteintlapi.com,PROXY
 DOMAIN-SUFFIX,byteoversea.com,PROXY
 DOMAIN-SUFFIX,byteoversea.net,PROXY
 DOMAIN-SUFFIX,bytetcdn.com,PROXY
@@ -50,6 +57,7 @@ DOMAIN-SUFFIX,ibytedtos.com,PROXY
 DOMAIN-SUFFIX,ibyteimg.com,PROXY
 DOMAIN-SUFFIX,ipstatp.com,PROXY
 DOMAIN-SUFFIX,isnssdk.com,PROXY
+DOMAIN-SUFFIX,marscode.com,PROXY
 DOMAIN-SUFFIX,muscdn.com,PROXY
 DOMAIN-SUFFIX,musemuse.cn,PROXY
 DOMAIN-SUFFIX,musical.ly,PROXY
@@ -78,12 +86,14 @@ DOMAIN-SUFFIX,tiktokv.us,PROXY
 DOMAIN-SUFFIX,tiktokw.us,PROXY
 DOMAIN-SUFFIX,tlivecdn.com,PROXY
 DOMAIN-SUFFIX,tlivepush.com,PROXY
+DOMAIN-SUFFIX,trae.ai,PROXY
 DOMAIN-SUFFIX,ttadsmanager.com,PROXY
 DOMAIN-SUFFIX,ttapis.com,PROXY
 DOMAIN-SUFFIX,ttdns2.com,PROXY
 DOMAIN-SUFFIX,ttlivecdn.com,PROXY
 DOMAIN-SUFFIX,ttoversea.net,PROXY
 DOMAIN-SUFFIX,ttoverseaus.net,PROXY
+DOMAIN-SUFFIX,ttwebview.com,PROXY
 DOMAIN-SUFFIX,ttwstatic.com,PROXY
 DOMAIN-SUFFIX,tzvbfs.com,PROXY
 DOMAIN-KEYWORD,bytedance.map.,PROXY
