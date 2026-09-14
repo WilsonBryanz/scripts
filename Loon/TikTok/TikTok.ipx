@@ -1,5 +1,5 @@
 #!name=TikTok 终极路由与动态换区
-#!desc=集成 QUIC 精准阻断、核心路由分流，及智能换区脚本。请在下方【代理指向的策略】中，将 TikTok_Select_Node 绑定到你的 TikTok 节点策略组。
+#!desc=集成 QUIC 精准阻断、全量可莉路由分流及智能换区脚本。请在下方【代理指向的策略】中将 PROXY 绑定到你的 TikTok 节点策略组。
 #!icon=https://raw.githubusercontent.com/chxm1023/Script_X/main/icon/TikTok.png
 #!raw-url=https://github.com/WilsonBryanz/scripts/edit/main/Loon/TikTok/TikTok.ipx
 #!author=WilsonBryanz[https://github.com/WilsonBryanz/scripts]
@@ -11,28 +11,90 @@ AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,byteoversea.com)),REJECT-NO-D
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,ibyteimg.com)),REJECT-NO-DROP
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,snssdk.com)),REJECT-NO-DROP
 
-# 👇--- 2 核心 API 正常走代理策略组 ---
+# 👇--- 2 全量 TikTok 路由分流 (统一映射至 PROXY) ---
+DOMAIN,api.snapkit.com,PROXY
+DOMAIN,cocacola.co.jp,PROXY
+DOMAIN,courses.snapsolve.com,PROXY
+DOMAIN,engagements.appsflyer.com,PROXY
+DOMAIN,lf16-campaign.ttlstatic.com,PROXY
+DOMAIN,lf16-csp.oecstatic.com,PROXY
+DOMAIN,lf16-pkgcdn.pitaya-clientai.com,PROXY
+DOMAIN,lf16-scmcdn.oecstatic.com,PROXY
+DOMAIN,lf19-csp.oecstatic.com,PROXY
+DOMAIN,lf19-pkgcdn.pitaya-clientai.com,PROXY
+DOMAIN,lf19-scmcdn.oecstatic.com,PROXY
+DOMAIN,musically-alternate.app.link,PROXY
+DOMAIN,musically.app.link,PROXY
+DOMAIN,p1-tt-ipv6.byteimg.com,PROXY
+DOMAIN,p1-tt.byteimg.com,PROXY
+DOMAIN,p26-tt.byteimg.com,PROXY
+DOMAIN,p3-tt-ipv6.byteimg.com,PROXY
+DOMAIN,p9-tt.byteimg.com,PROXY
+DOMAIN,roovza-launches.appsflyersdk.com,PROXY
+DOMAIN-SUFFIX,bytedance.com,PROXY
+DOMAIN-SUFFIX,bytedance.net,PROXY
+DOMAIN-SUFFIX,bytedapm.com,PROXY
+DOMAIN-SUFFIX,bytefcdn-oversea.com,PROXY
+DOMAIN-SUFFIX,bytefcdn-ttpeu.com,PROXY
+DOMAIN-SUFFIX,bytegecko-i18n.com,PROXY
+DOMAIN-SUFFIX,byteglb.com,PROXY
+DOMAIN-SUFFIX,byteicdn.com,PROXY
+DOMAIN-SUFFIX,byteigtm.com,PROXY
+DOMAIN-SUFFIX,byteintl.com,PROXY
+DOMAIN-SUFFIX,byteintl.net,PROXY
 DOMAIN-SUFFIX,byteoversea.com,PROXY
 DOMAIN-SUFFIX,byteoversea.net,PROXY
+DOMAIN-SUFFIX,bytetcdn.com,PROXY
+DOMAIN-SUFFIX,capcut.com,PROXY
 DOMAIN-SUFFIX,ibytedtos.com,PROXY
 DOMAIN-SUFFIX,ibyteimg.com,PROXY
 DOMAIN-SUFFIX,ipstatp.com,PROXY
+DOMAIN-SUFFIX,isnssdk.com,PROXY
 DOMAIN-SUFFIX,muscdn.com,PROXY
+DOMAIN-SUFFIX,musemuse.cn,PROXY
 DOMAIN-SUFFIX,musical.ly,PROXY
+DOMAIN-SUFFIX,pstatp.com,PROXY
 DOMAIN-SUFFIX,sgpstatp.com,PROXY
-DOMAIN-SUFFIX,snssdk.com,PROXY
+DOMAIN-SUFFIX,sgsnssdk.com,PROXY
 DOMAIN-SUFFIX,tik-tokapi.com,PROXY
+DOMAIN-SUFFIX,tiktok-usts.net,PROXY
 DOMAIN-SUFFIX,tiktok.com,PROXY
-DOMAIN-SUFFIX,tiktokcdn-com.akamaized.net,PROXY
+DOMAIN-SUFFIX,tiktok.in,PROXY
 DOMAIN-SUFFIX,tiktokcdn-eu.com,PROXY
 DOMAIN-SUFFIX,tiktokcdn-eu.net,PROXY
+DOMAIN-SUFFIX,tiktokcdn-in.com,PROXY
 DOMAIN-SUFFIX,tiktokcdn-us.com,PROXY
 DOMAIN-SUFFIX,tiktokcdn.com,PROXY
-DOMAIN-SUFFIX,tiktokinfo.com,PROXY
+DOMAIN-SUFFIX,tiktokd.net,PROXY
+DOMAIN-SUFFIX,tiktokd.org,PROXY
+DOMAIN-SUFFIX,tiktokglobalshop.com,PROXY
+DOMAIN-SUFFIX,tiktokglobalshopv.com,PROXY
+DOMAIN-SUFFIX,tiktokmusic.app,PROXY
+DOMAIN-SUFFIX,tiktokshop.com,PROXY
+DOMAIN-SUFFIX,tiktokstaticb.com,PROXY
 DOMAIN-SUFFIX,tiktokv.com,PROXY
+DOMAIN-SUFFIX,tiktokv.eu,PROXY
 DOMAIN-SUFFIX,tiktokv.us,PROXY
-DOMAIN-KEYWORD,tiktok,PROXY
-DOMAIN-KEYWORD,musical.ly,PROXY
+DOMAIN-SUFFIX,tiktokw.us,PROXY
+DOMAIN-SUFFIX,tlivecdn.com,PROXY
+DOMAIN-SUFFIX,tlivepush.com,PROXY
+DOMAIN-SUFFIX,ttadsmanager.com,PROXY
+DOMAIN-SUFFIX,ttapis.com,PROXY
+DOMAIN-SUFFIX,ttdns2.com,PROXY
+DOMAIN-SUFFIX,ttlivecdn.com,PROXY
+DOMAIN-SUFFIX,ttoversea.net,PROXY
+DOMAIN-SUFFIX,ttoverseaus.net,PROXY
+DOMAIN-SUFFIX,ttwstatic.com,PROXY
+DOMAIN-SUFFIX,tzvbfs.com,PROXY
+DOMAIN-KEYWORD,bytedance.map.,PROXY
+DOMAIN-KEYWORD,musical.ly.,PROXY
+DOMAIN-KEYWORD,tiktokcdn-,PROXY
+DOMAIN-KEYWORD,tiktokcdn.com.,PROXY
+DOMAIN-KEYWORD,tiktokv.com.,PROXY
+DOMAIN-KEYWORD,ttcdn-tos.,PROXY
+DOMAIN-KEYWORD,ttlivecdn.com.,PROXY
+IP-ASN,11983,PROXY,no-resolve
+IP-ASN,138699,PROXY,no-resolve
 
 [Script]
 # 👇--- 绝对不会 404 的 TikTok 远程动态重写 (支持 新、美、日、台、韩、英、欧盟 自动切换) ---
