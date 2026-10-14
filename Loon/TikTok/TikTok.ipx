@@ -100,6 +100,7 @@ DOMAIN-KEYWORD,bytedance.map,PROXY
 DOMAIN-KEYWORD,tiktokcdn-,PROXY
 DOMAIN-KEYWORD,ttcdn-tos,PROXY
 DOMAIN-KEYWORD,ttlivecdn.com,PROXY
+DOMAIN-KEYWORD,tiktok-row.net,PROXY
 IP-ASN,11983,PROXY,no-resolve
 IP-ASN,138699,PROXY,no-resolve
 
