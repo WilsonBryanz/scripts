@@ -27,4 +27,4 @@ http-response ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|
 
 [Mitm]
 # 👇 3. 证书解密白名单 (HTTPS 解密必须在此声明，⚠️ 绝对不能添加与任何银行域名)
-hostname = *.openai.com, *.chatgpt.com, *.anthropic.com, *.midjourney.com, *.facebook.com, *.instagram.com, *.x.com, *.twitter.com, *.reddit.com, *.discord.com, *.snapchat.com, *.pinterest.com, *.youtube.com, *.netflix.com, *.disneyplus.com, *.hulu.com, *.max.com, *.primevideo.com, *.meta.com, *.grok.com, *.linkedin.com, *.claude.ai, *.perplexity.ai, *.meta.ai, *.mistral.ai, *.x.ai, *.twitch.tv
+hostname = *.openai.com, *.chatgpt.com, *.anthropic.com, *.midjourney.com, *.facebook.com, *.instagram.com, *.x.com, *.twitter.com, *.reddit.com, *.discord.com, *.snapchat.com, *.pinterest.com, *.youtube.com, *.netflix.com, *.disneyplus.com, *.hulu.com, *.max.com, *.primevideo.com, *.meta.com, *.grok.com, *.linkedin.com, *.browserleaks.com, *.whoer.net, *.pixelscan.net, *.claude.ai, *.perplexity.ai, *.meta.ai, *.mistral.ai, *.x.ai, *.twitch.tv
