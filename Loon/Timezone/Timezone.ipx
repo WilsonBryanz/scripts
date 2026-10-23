@@ -23,7 +23,3 @@ http-request ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|i
 
 # 👇 2. Web 网页注入层 (纯净真实直链，无任何参数)
 http-response ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks)\.com|(claude|perplexity|meta|mistral|x)\.ai|(whoer|pixelscan)\.net|twitch\.tv) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone_Smart.js, requires-body=true, tag=动态环境_网页
-
-[Mitm]
-# 👇 3. 证书解密白名单
-hostname = *.openai.com, *.chatgpt.com, *.anthropic.com, *.midjourney.com, *.facebook.com, *.instagram.com, *.x.com, *.twitter.com, *.reddit.com, *.discord.com, *.snapchat.com, *.pinterest.com, *.youtube.com, *.netflix.com, *.disneyplus.com, *.hulu.com, *.max.com, *.primevideo.com, *.meta.com, *.grok.com, *.linkedin.com, *.browserleaks.com, *.whoer.net, *.pixelscan.net, *.claude.ai, *.perplexity.ai, *.meta.ai, *.mistral.ai, *.x.ai, *.twitch.tv
