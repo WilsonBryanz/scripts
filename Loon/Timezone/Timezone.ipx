@@ -19,10 +19,10 @@ AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,anthropic.com)),REJECT-NO-DRO
 
 [Script]
 # 👇 1. App API 劫持层 (纯净真实直链，无任何参数)
-http-request ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks)\.com|(claude|perplexity|meta|mistral|x)\.ai|(whoer|pixelscan)\.net|twitch\.tv) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone_Smart.js, requires-body=false, tag=动态时区_API
+http-request ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks)\.com|(claude|perplexity|meta|mistral|x)\.ai|(whoer|pixelscan)\.net|twitch\.tv) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone_Smart.js, requires-body=false, tag=动态环境_API
 
 # 👇 2. Web 网页注入层 (纯净真实直链，无任何参数)
-http-response ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks)\.com|(claude|perplexity|meta|mistral|x)\.ai|(whoer|pixelscan)\.net|twitch\.tv) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone_Smart.js, requires-body=true, tag=动态时区_网页
+http-response ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks)\.com|(claude|perplexity|meta|mistral|x)\.ai|(whoer|pixelscan)\.net|twitch\.tv) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone_Smart.js, requires-body=true, tag=动态环境_网页
 
 [Mitm]
 # 👇 3. 证书解密白名单
