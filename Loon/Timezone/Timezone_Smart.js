@@ -6,18 +6,15 @@
 
 let proxyName = $agent ? $agent.name.toUpperCase() : "";
 
-// 【第一层保险】：直连或拒绝策略，瞬间放行
 if (!proxyName || proxyName.includes("DIRECT") || proxyName === "直连" || proxyName.includes("REJECT")) {
     $done({});
 }
 
-// 默认回退：北京/新加坡时区 (UTC+8)
 let tzName = "Asia/Shanghai";
 let gmtOffset = "+0800";
 let timeOffsetMs = 0; 
 let tzOffsetMin = -480; 
 
-// 核心时区匹配引擎
 if (proxyName.includes("US") || proxyName.includes("美")) {
     tzName = "America/New_York"; gmtOffset = "-0500"; timeOffsetMs = -46800000; tzOffsetMin = 300;
 } else if (proxyName.includes("JP") || proxyName.includes("日") || proxyName.includes("东京")) {
@@ -42,17 +39,11 @@ if (proxyName.includes("US") || proxyName.includes("美")) {
 if (typeof $response === "undefined") {
     let url = $request.url;
     let headers = $request.headers;
-    
-    // 【SRE核心修复】：精准映射原始 Header 大小写，防止双重键名导致真实时区泄漏
     let originalKeys = {};
-    for (let key in headers) {
-        originalKeys[key.toLowerCase()] = key;
-    }
+    for (let key in headers) originalKeys[key.toLowerCase()] = key;
 
     let modifyHeader = (targetKey, value) => {
-        if (originalKeys[targetKey]) {
-            headers[originalKeys[targetKey]] = value;
-        }
+        if (originalKeys[targetKey]) headers[originalKeys[targetKey]] = value;
     };
 
     modifyHeader("x-timezone", tzName);
@@ -60,11 +51,7 @@ if (typeof $response === "undefined") {
     modifyHeader("tz", tzName);
     modifyHeader("x-gmt-offset", gmtOffset);
 
-    // 篡改 URL 携带的时区参数
-    if (url.includes("timezone=")) {
-        url = url.replace(/(timezone=)[^&]+/g, '$1' + encodeURIComponent(tzName));
-    }
-    
+    if (url.includes("timezone=")) url = url.replace(/(timezone=)[^&]+/g, '$1' + encodeURIComponent(tzName));
     $done({url, headers});
 }
 
@@ -75,10 +62,7 @@ if (typeof $response !== "undefined") {
     let headers = $response.headers;
     let contentType = headers["Content-Type"] || headers["content-type"] || "";
     
-    // 非 HTML 网页直接放行，保护内存
-    if (!contentType.includes("text/html")) {
-        $done({});
-    }
+    if (!contentType.includes("text/html")) $done({});
 
     let body = $response.body;
     let injectJS = `
@@ -92,15 +76,30 @@ if (typeof $response !== "undefined") {
             static now() { return __oDate.now() + ${timeOffsetMs}; }
         };
         Date.prototype.getTimezoneOffset = function() { return ${tzOffsetMin}; };
+        
         const __oIntl = Intl.DateTimeFormat;
         Intl.DateTimeFormat = function(...args) {
             let opts = args[1] || {};
             if (!opts.timeZone) opts.timeZone = '${tzName}';
             return new __oIntl(args[0], opts);
         };
+
+        // 【SRE Level 3 修复】：劫持底层字符串输出，强制抹除"中国标准时间"
+        const __toStr = __oDate.prototype.toString;
+        const __toTimeStr = __oDate.prototype.toTimeString;
+        // 匹配原生的 GMT+0800 (中国标准时间) 等字符串
+        const tzRegex = /GMT[+-]\\d{4}\\s*\\(.*?\\)/;
+        // 组装伪装目标的字符串后缀
+        const fakeTzStr = 'GMT${gmtOffset} (${tzName})';
+
+        Date.prototype.toString = function() {
+            return __toStr.call(this).replace(tzRegex, fakeTzStr);
+        };
+        Date.prototype.toTimeString = function() {
+            return __toTimeStr.call(this).replace(tzRegex, fakeTzStr);
+        };
     </script>`;
 
-    // 【SRE核心修复】：正则匹配任意变异的 head 标签 (如 <head lang="en">)
     if (body && typeof body === "string" && /<head[^>]*>/i.test(body)) {
         body = body.replace(/(<head[^>]*>)/i, `$1${injectJS}`);
         $done({body});
