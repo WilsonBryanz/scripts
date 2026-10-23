@@ -15,6 +15,7 @@ let gmtOffset = "+0800";
 let timeOffsetMs = 0; 
 let tzOffsetMin = -480; 
 
+// 核心时区匹配引擎
 if (proxyName.includes("US") || proxyName.includes("美")) {
     tzName = "America/New_York"; gmtOffset = "-0500"; timeOffsetMs = -46800000; tzOffsetMin = 300;
 } else if (proxyName.includes("JP") || proxyName.includes("日") || proxyName.includes("东京")) {
@@ -34,7 +35,7 @@ if (proxyName.includes("US") || proxyName.includes("美")) {
 }
 
 // ----------------------------------------------------
-// 【执行引擎 A】：App API 请求头拦截 ($request)
+// 【执行引擎 A】：App API 请求头拦截
 // ----------------------------------------------------
 if (typeof $response === "undefined") {
     let url = $request.url;
@@ -56,7 +57,7 @@ if (typeof $response === "undefined") {
 }
 
 // ----------------------------------------------------
-// 【执行引擎 B】：Web 网页 HTML 注入 ($response)
+// 【执行引擎 B】：Web 网页 HTML 暴力注入
 // ----------------------------------------------------
 if (typeof $response !== "undefined") {
     let headers = $response.headers;
@@ -67,41 +68,70 @@ if (typeof $response !== "undefined") {
     let body = $response.body;
     let injectJS = `
     <script>
-        const __oDate = Date;
-        globalThis.Date = class extends __oDate {
-            constructor(...args) {
-                if (args.length === 0) super(super.now() + ${timeOffsetMs});
-                else super(...args);
+        (function() {
+            const __oDate = Date;
+            const fakeTzName = '${tzName}';
+            const fakeGmtOffset = '${gmtOffset}';
+            const fakeTimeOffsetMs = ${timeOffsetMs};
+            const fakeTzOffsetMin = ${tzOffsetMin};
+            const tzRegex = /GMT[+-]\\d{4}\\s*\\(.*?\\)/;
+            const fakeTzStr = 'GMT' + fakeGmtOffset + ' (' + fakeTzName + ')';
+
+            // 1. 重写 Date 对象
+            class FakeDate extends __oDate {
+                constructor(...args) {
+                    if (args.length === 0) super(super.now() + fakeTimeOffsetMs);
+                    else super(...args);
+                }
+                static now() { return __oDate.now() + fakeTimeOffsetMs; }
             }
-            static now() { return __oDate.now() + ${timeOffsetMs}; }
-        };
-        Date.prototype.getTimezoneOffset = function() { return ${tzOffsetMin}; };
-        
-        const __oIntl = Intl.DateTimeFormat;
-        Intl.DateTimeFormat = function(...args) {
-            let opts = args[1] || {};
-            if (!opts.timeZone) opts.timeZone = '${tzName}';
-            return new __oIntl(args[0], opts);
-        };
+            
+            // 2. 深度抹除字符串特征
+            FakeDate.prototype.getTimezoneOffset = function() { return fakeTzOffsetMin; };
+            FakeDate.prototype.toString = function() {
+                return __oDate.prototype.toString.call(this).replace(tzRegex, fakeTzStr);
+            };
+            FakeDate.prototype.toTimeString = function() {
+                return __oDate.prototype.toTimeString.call(this).replace(tzRegex, fakeTzStr);
+            };
+            globalThis.Date = FakeDate;
 
-        // 【SRE Level 3 修复】：劫持底层字符串输出，强制抹除"中国标准时间"
-        const __toStr = __oDate.prototype.toString;
-        const __toTimeStr = __oDate.prototype.toTimeString;
-        // 匹配原生的 GMT+0800 (中国标准时间) 等字符串
-        const tzRegex = /GMT[+-]\\d{4}\\s*\\(.*?\\)/;
-        // 组装伪装目标的字符串后缀
-        const fakeTzStr = 'GMT${gmtOffset} (${tzName})';
+            // 3. 重写 Intl 国际化 API
+            const __oIntl = Intl.DateTimeFormat;
+            Intl.DateTimeFormat = function(...args) {
+                let opts = args[1] || {};
+                if (!opts.timeZone) opts.timeZone = fakeTzName;
+                return new __oIntl(args[0], opts);
+            };
 
-        Date.prototype.toString = function() {
-            return __toStr.call(this).replace(tzRegex, fakeTzStr);
-        };
-        Date.prototype.toTimeString = function() {
-            return __toTimeStr.call(this).replace(tzRegex, fakeTzStr);
-        };
+            // 4. 【SRE 终极防御】：Iframe 沙盒逃逸追杀
+            if (typeof document !== 'undefined') {
+                const __createElement = document.createElement.bind(document);
+                document.createElement = function(tagName) {
+                    const el = __createElement(tagName);
+                    if (tagName.toLowerCase() === 'iframe') {
+                        el.addEventListener('load', function() {
+                            try {
+                                this.contentWindow.Date = globalThis.Date;
+                                this.contentWindow.Intl = globalThis.Intl;
+                            } catch(e) {}
+                        });
+                    }
+                    return el;
+                };
+            }
+        })();
     </script>`;
 
-    if (body && typeof body === "string" && /<head[^>]*>/i.test(body)) {
-        body = body.replace(/(<head[^>]*>)/i, `$1${injectJS}`);
+    // 暴力注入引擎：寻找 head，找不到找 html，再找不到直接塞最前面
+    if (body && typeof body === "string") {
+        if (/<head[^>]*>/i.test(body)) {
+            body = body.replace(/(<head[^>]*>)/i, `$1${injectJS}`);
+        } else if (/<html[^>]*>/i.test(body)) {
+            body = body.replace(/(<html[^>]*>)/i, `$1${injectJS}`);
+        } else {
+            body = injectJS + body;
+        }
         $done({body});
     } else {
         $done({});
