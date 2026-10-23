@@ -1,7 +1,6 @@
 #!name=全端节点动态时区伪装 (国际白名单版)
-#!desc=对包含 国际头部 AI、社媒及流媒体进行无感时区篡改。内置 QUIC 阻断引擎，确保 MitM 100% 触发。
-#!icon=https://raw.githubusercontent.com/WilsonBryanz/scripts/refs/heads/main/icon/Timezone.png
-#!raw-url=https://raw.githubusercontent.com/WilsonBryanz/scripts/refs/heads/main/Loon/Timezone/Timezone.ipx
+#!desc=对包含 Grok、Claude 与领英在内的国际头部 AI、社媒及流媒体进行无感时区篡改。内置 QUIC 阻断引擎，确保 MitM 100% 触发。
+#!icon=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Clock.png
 #!author=WilsonBryanz
 
 [Rule]
@@ -26,5 +25,5 @@ http-request ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|i
 http-response ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks)\.com|(claude|perplexity|meta|mistral|x)\.ai|(whoer|pixelscan)\.net|twitch\.tv) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone_Smart.js?v=6, requires-body=true, tag=动态时区_网页
 
 [Mitm]
-# 👇 3. 证书解密白名单 (HTTPS 解密必须在此声明，⚠️ 绝对不能添加与任何银行域名)
+# 👇 3. 证书解密白名单 (HTTPS 解密必须在此声明，⚠️ 绝对不能添加 tiktok.com 与任何银行域名)
 hostname = *.openai.com, *.chatgpt.com, *.anthropic.com, *.midjourney.com, *.facebook.com, *.instagram.com, *.x.com, *.twitter.com, *.reddit.com, *.discord.com, *.snapchat.com, *.pinterest.com, *.youtube.com, *.netflix.com, *.disneyplus.com, *.hulu.com, *.max.com, *.primevideo.com, *.meta.com, *.grok.com, *.linkedin.com, *.browserleaks.com, *.whoer.net, *.pixelscan.net, *.claude.ai, *.perplexity.ai, *.meta.ai, *.mistral.ai, *.x.ai, *.twitch.tv
