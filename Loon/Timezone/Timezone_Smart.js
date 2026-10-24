@@ -1,45 +1,71 @@
 /**
- * @name 智能动态时区伪装 (代理流量专属防漏版)
+ * @name 全自动感知环境伪装 (Loon 终极自适应版)
  * @author WilsonBryanz
- * @description 融合防指纹项目特性，支持动态时区、动态语言 (Navigator/Header)、硬件参数模糊化及 Iframe 逃逸追杀。
+ * @description 引入惰性嗅探 (Cache-Aside) 架构。无论如何切换节点，自动后台检测落地 IP，精准计算毫秒级时差与语言指纹。
  */
 
-let proxyName = $agent ? $agent.name.toUpperCase() : "";
+// 1. 从 Loon 本地缓存读取环境数据（默认兜底为美国）
+let tzName = $persistentStore.read("SRE_TZ") || "America/New_York";
+let cc = $persistentStore.read("SRE_CC") || "US";
+let gmtOffset = $persistentStore.read("SRE_GMT") || "-0500";
+let timeOffsetMs = parseInt($persistentStore.read("SRE_OFFSET_MS") || "-46800000");
+let tzOffsetMin = parseInt($persistentStore.read("SRE_OFFSET_MIN") || "300");
 
-if (!proxyName || proxyName.includes("DIRECT") || proxyName === "直连" || proxyName.includes("REJECT")) {
-    $done({});
-}
+// 2. 多国语言指纹自适应矩阵
+let langMap = {
+    "US": { l: "en-US", ls: "['en-US', 'en']", al: "en-US,en;q=0.9" },
+    "JP": { l: "ja-JP", ls: "['ja-JP', 'ja', 'en-US', 'en']", al: "ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7" },
+    "GB": { l: "en-GB", ls: "['en-GB', 'en-US', 'en']", al: "en-GB,en-US;q=0.9,en;q=0.8" },
+    "DE": { l: "de-DE", ls: "['de-DE', 'de', 'en-US', 'en']", al: "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7" },
+    "KR": { l: "ko-KR", ls: "['ko-KR', 'ko', 'en-US', 'en']", al: "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7" },
+    "SG": { l: "en-SG", ls: "['en-SG', 'en-US', 'en']", al: "en-SG,en-US;q=0.9,en;q=0.8" },
+    "TW": { l: "zh-TW", ls: "['zh-TW', 'zh-HK', 'zh', 'en-US', 'en']", al: "zh-TW,zh-HK;q=0.9,zh;q=0.8,en-US;q=0.7,en;q=0.6" },
+    "HK": { l: "zh-HK", ls: "['zh-HK', 'zh-TW', 'zh', 'en-US', 'en']", al: "zh-HK,zh-TW;q=0.9,zh;q=0.8,en-US;q=0.7,en;q=0.6" },
+    "AE": { l: "ar-AE", ls: "['ar-AE', 'ar', 'en-US', 'en']", al: "ar-AE,ar;q=0.9,en-US;q=0.8,en;q=0.7" }
+};
+let langCfg = langMap[cc] || langMap["US"];
 
-// 默认回退环境：新加坡 (英文环境更安全)
-let tzName = "Asia/Singapore"; let gmtOffset = "+0800"; let timeOffsetMs = 0; let tzOffsetMin = -480; 
-let navLang = "en-SG"; let navLangs = "['en-SG', 'en-US', 'en']"; let acceptLang = "en-SG,en-US;q=0.9,en;q=0.8";
+// ----------------------------------------------------
+// 【异步静默探测引擎】：每 60 秒自动纠正一次 IP 归属地
+// ----------------------------------------------------
+let lastCheck = $persistentStore.read("SRE_LAST_CHECK");
+let now = Date.now();
+// 节流控制：60秒内只探测一次，防 API 封禁，绝对不影响网页加载速度
+if (!lastCheck || (now - parseInt(lastCheck)) > 60000) {
+    $persistentStore.write(now.toString(), "SRE_LAST_CHECK");
+    
+    // 通过当前代理节点查询真实出口 IP 信息
+    $httpClient.get("http://ip-api.com/json/?fields=countryCode,timezone,offset", function(error, response, data){
+        if(!error){
+            try {
+                let obj = JSON.parse(data);
+                if(obj.timezone && obj.countryCode) {
+                    $persistentStore.write(obj.timezone, "SRE_TZ");
+                    $persistentStore.write(obj.countryCode, "SRE_CC");
+                    
+                    // 核心数学引擎：动态计算系统物理时区与代理时区的绝对偏移量
+                    let targetOffsetMin = obj.offset / 60; 
+                    let systemOffsetMin = -(new Date().getTimezoneOffset());
+                    let diffMin = targetOffsetMin - systemOffsetMin;
+                    let calculatedTimeOffsetMs = diffMin * 60 * 1000;
+                    let calculatedTzOffsetMin = -targetOffsetMin; 
 
-// 核心环境匹配引擎 (时区 + 语言动态联动)
-if (proxyName.includes("US") || proxyName.includes("美")) {
-    tzName = "America/New_York"; gmtOffset = "-0500"; timeOffsetMs = -46800000; tzOffsetMin = 300;
-    navLang = "en-US"; navLangs = "['en-US', 'en']"; acceptLang = "en-US,en;q=0.9";
-} else if (proxyName.includes("JP") || proxyName.includes("日") || proxyName.includes("东京")) {
-    tzName = "Asia/Tokyo"; gmtOffset = "+0900"; timeOffsetMs = 3600000; tzOffsetMin = -540;
-    navLang = "ja-JP"; navLangs = "['ja-JP', 'ja', 'en-US', 'en']"; acceptLang = "ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7";
-} else if (proxyName.includes("UK") || proxyName.includes("英") || proxyName.includes("伦敦")) {
-    tzName = "Europe/London"; gmtOffset = "+0000"; timeOffsetMs = -28800000; tzOffsetMin = 0;
-    navLang = "en-GB"; navLangs = "['en-GB', 'en-US', 'en']"; acceptLang = "en-GB,en-US;q=0.9,en;q=0.8";
-} else if (proxyName.includes("DE") || proxyName.includes("德") || proxyName.includes("法") || proxyName.includes("欧") || proxyName.includes("EU")) {
-    tzName = "Europe/Berlin"; gmtOffset = "+0100"; timeOffsetMs = -25200000; tzOffsetMin = -60;
-    navLang = "de-DE"; navLangs = "['de-DE', 'de', 'en-US', 'en']"; acceptLang = "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7";
-} else if (proxyName.includes("AE") || proxyName.includes("迪拜") || proxyName.includes("阿联酋")) {
-    tzName = "Asia/Dubai"; gmtOffset = "+0400"; timeOffsetMs = -14400000; tzOffsetMin = -240;
-    navLang = "ar-AE"; navLangs = "['ar-AE', 'ar', 'en-US', 'en']"; acceptLang = "ar-AE,ar;q=0.9,en-US;q=0.8,en;q=0.7";
-} else if (proxyName.includes("KR") || proxyName.includes("韩") || proxyName.includes("首尔")) {
-    tzName = "Asia/Seoul"; gmtOffset = "+0900"; timeOffsetMs = 3600000; tzOffsetMin = -540;
-    navLang = "ko-KR"; navLangs = "['ko-KR', 'ko', 'en-US', 'en']"; acceptLang = "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7";
-} else if (proxyName.includes("TW") || proxyName.includes("台")) {
-    tzName = "Asia/Taipei"; gmtOffset = "+0800"; timeOffsetMs = 0; tzOffsetMin = -480;
-    navLang = "zh-TW"; navLangs = "['zh-TW', 'zh-HK', 'zh', 'en-US', 'en']"; acceptLang = "zh-TW,zh-HK;q=0.9,zh;q=0.8,en-US;q=0.7,en;q=0.6";
+                    let sign = obj.offset >= 0 ? "+" : "-";
+                    let absHour = Math.floor(Math.abs(obj.offset) / 3600).toString().padStart(2, '0');
+                    let absMin = Math.floor((Math.abs(obj.offset) % 3600) / 60).toString().padStart(2, '0');
+                    let gmtStr = sign + absHour + absMin;
+
+                    $persistentStore.write(gmtStr, "SRE_GMT");
+                    $persistentStore.write(calculatedTimeOffsetMs.toString(), "SRE_OFFSET_MS");
+                    $persistentStore.write(calculatedTzOffsetMin.toString(), "SRE_OFFSET_MIN");
+                }
+            } catch(e) {}
+        }
+    });
 }
 
 // ----------------------------------------------------
-// 【引擎 A】：App API 请求头拦截 (语言 + 时区)
+// 【执行引擎 A】：App API 请求头拦截 (时区 + 语言动态注入)
 // ----------------------------------------------------
 if (typeof $response === "undefined") {
     let url = $request.url;
@@ -51,20 +77,18 @@ if (typeof $response === "undefined") {
         if (originalKeys[targetKey]) headers[originalKeys[targetKey]] = value;
     };
 
-    // 时区篡改
     modifyHeader("x-timezone", tzName);
     modifyHeader("timezone", tzName);
     modifyHeader("tz", tzName);
     modifyHeader("x-gmt-offset", gmtOffset);
-    // 语言篡改 (防指纹特征)
-    modifyHeader("accept-language", acceptLang);
+    modifyHeader("accept-language", langCfg.al);
 
     if (url.includes("timezone=")) url = url.replace(/(timezone=)[^&]+/g, '$1' + encodeURIComponent(tzName));
     $done({url, headers});
 }
 
 // ----------------------------------------------------
-// 【引擎 B】：Web 网页 HTML 指纹注入
+// 【执行引擎 B】：Web 网页 HTML 底层防指纹强力注入
 // ----------------------------------------------------
 if (typeof $response !== "undefined") {
     let headers = $response.headers;
@@ -75,7 +99,6 @@ if (typeof $response !== "undefined") {
     let injectJS = `
     <script>
         (function() {
-            // --- 1. 时区指纹伪装 ---
             const __oDate = Date;
             const fakeTzName = '${tzName}'; const fakeGmtOffset = '${gmtOffset}';
             const fakeTimeOffsetMs = ${timeOffsetMs}; const fakeTzOffsetMin = ${tzOffsetMin};
@@ -101,17 +124,12 @@ if (typeof $response !== "undefined") {
                 return new __oIntl(args[0], opts);
             };
 
-            // --- 2. 环境语言指纹伪装 (借鉴 my-fingerprint) ---
             const navProto = Object.getPrototypeOf(navigator);
-            Object.defineProperty(navProto, 'language', { get: () => '${navLang}' });
-            Object.defineProperty(navProto, 'languages', { get: () => ${navLangs} });
-
-            // --- 3. 硬件指纹模糊化 (借鉴 my-fingerprint) ---
-            // 锁定核心数与内存，防止由于特异性硬件被追踪
+            Object.defineProperty(navProto, 'language', { get: () => '${langCfg.l}' });
+            Object.defineProperty(navProto, 'languages', { get: () => ${langCfg.ls} });
             Object.defineProperty(navProto, 'hardwareConcurrency', { get: () => 8 });
             Object.defineProperty(navProto, 'deviceMemory', { get: () => 8 });
 
-            // --- 4. Iframe 沙盒逃逸追杀 ---
             if (typeof document !== 'undefined') {
                 const __createElement = document.createElement.bind(document);
                 document.createElement = function(tagName) {
@@ -122,8 +140,8 @@ if (typeof $response !== "undefined") {
                                 this.contentWindow.Date = globalThis.Date;
                                 this.contentWindow.Intl = globalThis.Intl;
                                 const ifNavProto = Object.getPrototypeOf(this.contentWindow.navigator);
-                                Object.defineProperty(ifNavProto, 'language', { get: () => '${navLang}' });
-                                Object.defineProperty(ifNavProto, 'languages', { get: () => ${navLangs} });
+                                Object.defineProperty(ifNavProto, 'language', { get: () => '${langCfg.l}' });
+                                Object.defineProperty(ifNavProto, 'languages', { get: () => ${langCfg.ls} });
                             } catch(e) {}
                         });
                     }
