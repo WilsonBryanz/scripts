@@ -1,7 +1,7 @@
 #!name=全端节点动态时区伪装 (国际白名单版)
 #!desc=对包含 国际头部 AI、社媒及流媒体进行无感时区篡改。内置 QUIC 阻断引擎，确保 MitM 100% 触发。
 #!icon=https://raw.githubusercontent.com/WilsonBryanz/scripts/refs/heads/main/icon/Timezone.png
-#!raw-url=https://raw.githubusercontent.com/WilsonBryanz/scripts/refs/heads/main/Loon/Timezone/Timezone.ipx
+#!raw-url=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone.ipx
 #!author=WilsonBryanz
 
 [Rule]
@@ -28,11 +28,12 @@ AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,midjourney.com)),REJECT-NO-DR
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,chatgpt.com)),REJECT-NO-DROP
 
 [Script]
-# 👇 1. App API 劫持层 (正则已补全 whoer、pixelscan 和 browserleaks)
-http-request ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks)\.com|(claude|perplexity|meta|mistral|x)\.ai|(whoer|pixelscan)\.net|twitch\.tv) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/refs/heads/main/Loon/Timezone/Timezone_Smart.js, requires-body=false, tag=动态时区_API
+# 👇 1. App API 劫持层 (URL已优化为纯净 main 路径，正则已同步补全 poe, character, threads 等)
+http-request ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks|poe|character|threads)\.com|(claude|perplexity|meta|mistral|x|character)\.ai|(whoer|pixelscan|threads)\.net|twitch\.tv) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone_Smart.js, requires-body=false, tag=动态时区_API
 
-# 👇 2. Web 网页注入层 (正则已补全 whoer、pixelscan 和 browserleaks)
-http-response ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks)\.com|(claude|perplexity|meta|mistral|x)\.ai|(whoer|pixelscan)\.net|twitch\.tv) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/refs/heads/main/Loon/Timezone/Timezone_Smart.js, requires-body=true, tag=动态时区_网页
+# 👇 2. Web 网页注入层 (同上，保持绝对同步)
+http-response ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks|poe|character|threads)\.com|(claude|perplexity|meta|mistral|x|character)\.ai|(whoer|pixelscan|threads)\.net|twitch\.tv) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone_Smart.js, requires-body=true, tag=动态时区_网页
 
-# 👇 3. 证书解密白名单 (HTTPS 解密必须在此声明，⚠️ 绝对不能添加与任何银行域名)
-hostname = *.midjourney.com, *.linkedin.com, *.browserleaks.com, *.whoer.net, *.pixelscan.net, *.twitch.tv
+[Mitm]
+# 👇 3. 证书解密白名单 (⚠️ 修复了致命的标签缺失问题，并补全了你新增的无 SSL 强校验域名)
+hostname = *.midjourney.com, *.linkedin.com, *.browserleaks.com, *.whoer.net, *.pixelscan.net, *.twitch.tv, *.poe.com, *.character.ai, *.threads.net, *.reddit.com, *.discord.com
