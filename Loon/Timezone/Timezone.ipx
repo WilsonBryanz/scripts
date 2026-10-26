@@ -5,7 +5,7 @@
 #!raw-url=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone.ipx
 #!author=WilsonBryanz
 #!loon_version=3.2.1(372)
-#!date=2026-10-26 21:49:00
+#!date=2026-10-26 21:58:00
 
 [Rule]
 # 👇 0. 强制核心应用回退 TCP (精准阻断 QUIC，确保解密与脚本 100% 命中)
