@@ -1,14 +1,15 @@
 /**
- * @name 全自动感知环境伪装 (SRE Level 8 精准校准版)
+ * @name 全自动感知环境伪装 (SRE Level 9 跨海追踪版)
  * @author WilsonBryanz
- * @description 修复 Intl 探针泄漏物理时区的致命错误。利用目标时区反向计算 DST (夏令时) 偏移量，默认精准适配美西 (Oracle Cloud) 节点。
+ * @description 修复 iOS ATS 拦截 HTTP 导致的探针瘫痪。升级 HTTPS 探针 (ipwho.is)，实现秒级节点切换识别。
  */
 
 try {
-    // 默认兜底环境改为美西（洛杉矶），完美匹配你的 Oracle Cloud 节点
+    // 默认兜底环境（当探针还在路上时使用）
     let targetTz = $persistentStore.read("SRE_TZ") || "America/Los_Angeles";
     let targetCc = $persistentStore.read("SRE_CC") || "US";
 
+    // 全球主流国家语言指纹库
     let langMap = {
         "US": { l: "en-US", ls: "['en-US', 'en']", al: "en-US,en;q=0.9" },
         "JP": { l: "ja-JP", ls: "['ja-JP', 'ja', 'en-US', 'en']", al: "ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7" },
@@ -21,25 +22,31 @@ try {
     };
     let langCfg = langMap[targetCc] || langMap["US"];
 
-    // 静默探测 (仅获取目标时区名称，不再自己算时差，防错位)
+    // ----------------------------------------------------
+    // 【异步静默探测】：使用纯 HTTPS，完美绕过 iOS ATS 拦截
+    // ----------------------------------------------------
     let lastCheck = $persistentStore.read("SRE_LAST_CHECK");
     let now = Date.now();
-    if (!lastCheck || (now - parseInt(lastCheck)) > 60000) {
+    // 节流阀缩短至 2 秒，只要你换节点，刷新一次立马触发探测
+    if (!lastCheck || (now - parseInt(lastCheck)) > 2000) {
         $persistentStore.write(now.toString(), "SRE_LAST_CHECK");
-        $httpClient.get("http://ip-api.com/json/?fields=countryCode,timezone", function(error, response, data){
+        
+        $httpClient.get("https://ipwho.is/", function(error, response, data){
             if(!error && data){
                 try {
                     let obj = JSON.parse(data);
-                    if(obj.timezone && obj.countryCode) {
-                        $persistentStore.write(obj.timezone, "SRE_TZ");
-                        $persistentStore.write(obj.countryCode, "SRE_CC");
+                    if(obj.timezone && obj.timezone.id) {
+                        $persistentStore.write(obj.timezone.id, "SRE_TZ");
+                        $persistentStore.write(obj.country_code, "SRE_CC");
                     }
                 } catch(e) {}
             }
         });
     }
 
-    // 执行引擎 A：API 请求头拦截
+    // ----------------------------------------------------
+    // 【执行引擎 A】：API 请求头拦截
+    // ----------------------------------------------------
     if (typeof $response === "undefined") {
         let headers = $request.headers;
         let originalKeys = {};
@@ -53,7 +60,9 @@ try {
         $done({headers});
     }
 
-    // 执行引擎 B：HTML 智能反向注入
+    // ----------------------------------------------------
+    // 【执行引擎 B】：HTML 智能反向注入
+    // ----------------------------------------------------
     if (typeof $response !== "undefined") {
         let headers = $response.headers;
         let contentType = headers["Content-Type"] || headers["content-type"] || "";
@@ -67,43 +76,35 @@ try {
                     const targetTzName = '${targetTz}';
                     const OriginalDate = globalThis.Date;
 
-                    // 1. 利用 Intl 引擎强行计算目标时区（如洛杉矶）在此时此刻的绝对偏移量
-                    // 这能完美解决夏令时 (PDT -0700) 与冬令时 (PST -0800) 的动态切换问题
-                    let targetOffsetMin = 420; 
-                    let fakeGmtOffset = "-0700";
+                    let targetOffsetMin = 0; 
+                    let fakeGmtOffset = "+0000";
                     try {
                         let format = new Intl.DateTimeFormat('en-US', {
                             timeZone: targetTzName,
                             timeZoneName: 'longOffset'
                         }).format(new OriginalDate()); 
 
-                        let match = format.match(/GMT([+-])(\\d{2}):(\\d{2})/);
+                        // 强兼容正则，解决 GMT, GMT+01:00, GMT-07:00 等所有边界问题
+                        let match = format.match(/GMT([+-])(\\d{2}):?(\\d{2})?/);
                         if (match) {
                             let sign = match[1] === '+' ? -1 : 1;
                             let hours = parseInt(match[2], 10);
-                            let mins = parseInt(match[3], 10);
+                            let mins = match[3] ? parseInt(match[3], 10) : 0;
                             targetOffsetMin = sign * (hours * 60 + mins);
-                            fakeGmtOffset = match[1] + match[2] + match[3];
+                            fakeGmtOffset = match[1] + match[2].padStart(2, '0') + (match[3] ? match[3].padStart(2, '0') : '00');
                         }
                     } catch (e) {}
 
-                    // 2. 动态计算时差：系统真实偏移(中国 -480) - 目标偏移(美西 420) = -900分钟
                     const systemOffsetMin = new OriginalDate().getTimezoneOffset();
                     const diffMin = systemOffsetMin - targetOffsetMin; 
                     const fakeTimeOffsetMs = diffMin * 60 * 1000;
 
-                    // 3. 构建伪装字符串 (例如: GMT-0700 (America/Los_Angeles))
                     const fakeTzStr = 'GMT' + fakeGmtOffset + ' (' + targetTzName + ')';
                     const tzRegex = /GMT[+-]\\d{4}\\s*\\(.*?\\)/;
 
-                    // 4. 重写底层 Date 对象
                     const HookedDate = function(...args) {
-                        if (new.target === undefined) {
-                            return new HookedDate().toString();
-                        }
-                        if (args.length === 0) {
-                            return new OriginalDate(OriginalDate.now() + fakeTimeOffsetMs);
-                        }
+                        if (new.target === undefined) return new HookedDate().toString();
+                        if (args.length === 0) return new OriginalDate(OriginalDate.now() + fakeTimeOffsetMs);
                         return new OriginalDate(...args);
                     };
                     
@@ -115,19 +116,12 @@ try {
                     HookedDate.prototype.constructor = HookedDate;
                     
                     const origToString = OriginalDate.prototype.toString;
-                    HookedDate.prototype.toString = function() {
-                        return origToString.call(this).replace(tzRegex, fakeTzStr);
-                    };
+                    HookedDate.prototype.toString = function() { return origToString.call(this).replace(tzRegex, fakeTzStr); };
                     const origToTimeString = OriginalDate.prototype.toTimeString;
-                    HookedDate.prototype.toTimeString = function() {
-                        return origToTimeString.call(this).replace(tzRegex, fakeTzStr);
-                    };
-                    HookedDate.prototype.getTimezoneOffset = function() {
-                        return targetOffsetMin;
-                    };
+                    HookedDate.prototype.toTimeString = function() { return origToTimeString.call(this).replace(tzRegex, fakeTzStr); };
+                    HookedDate.prototype.getTimezoneOffset = function() { return targetOffsetMin; };
                     globalThis.Date = HookedDate;
 
-                    // 5. 劫持 Intl 国际化 API
                     const __oIntl = Intl.DateTimeFormat;
                     Intl.DateTimeFormat = function(...args) {
                         let opts = args[1] || {};
@@ -135,7 +129,6 @@ try {
                         return new __oIntl(args[0], opts);
                     };
 
-                    // 6. 环境指纹锁定与 Iframe 沙盒追杀
                     const navProto = Object.getPrototypeOf(navigator);
                     Object.defineProperty(navProto, 'language', { get: () => '${langCfg.l}' });
                     Object.defineProperty(navProto, 'languages', { get: () => ${langCfg.ls} });
