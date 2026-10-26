@@ -28,12 +28,12 @@ AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,midjourney.com)),REJECT-NO-DR
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,chatgpt.com)),REJECT-NO-DROP
 
 [Script]
-# 👇 1. App API 劫持层 (URL已优化为纯净 main 路径，正则已同步补全 poe, character, threads 等)
+# 👇 1. App API 劫持层
 http-request ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks|poe|character|threads)\.com|(claude|perplexity|meta|mistral|x|character)\.ai|(whoer|pixelscan|threads)\.net|twitch\.tv) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone_Smart.js, requires-body=false, tag=动态时区_API
 
-# 👇 2. Web 网页注入层 (同上，保持绝对同步)
+# 👇 2. Web 网页注入层
 http-response ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks|poe|character|threads)\.com|(claude|perplexity|meta|mistral|x|character)\.ai|(whoer|pixelscan|threads)\.net|twitch\.tv) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone_Smart.js, requires-body=true, tag=动态时区_网页
 
 [Mitm]
-# 👇 3. 证书解密白名单 (⚠️ 修复了致命的标签缺失问题，并补全了你新增的无 SSL 强校验域名)
-hostname = *.midjourney.com, *.linkedin.com, *.browserleaks.com, *.whoer.net, *.pixelscan.net, *.twitch.tv, *.poe.com, *.character.ai, *.threads.net, *.reddit.com, *.discord.com
+# 👇 3. 证书解密白名单 (⚠️ 已将 whoer.net 和 pixelscan.net 根域名双重覆盖)
+hostname = midjourney.com, *.midjourney.com, linkedin.com, *.linkedin.com, browserleaks.com, *.browserleaks.com, whoer.net, *.whoer.net, pixelscan.net, *.pixelscan.net, twitch.tv, *.twitch.tv, poe.com, *.poe.com, character.ai, *.character.ai, threads.net, *.threads.net, reddit.com, *.reddit.com, discord.com, *.discord.com
