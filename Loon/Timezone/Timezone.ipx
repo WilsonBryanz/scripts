@@ -1,8 +1,11 @@
 #!name=全端节点动态时区伪装 (国际白名单版)
-#!desc=对包含 国际头部 AI、社媒及流媒体进行无感时区篡改。内置 QUIC 阻断引擎，确保 MitM 100% 触发。
+#!desc=对包含国际头部 AI、社媒及流媒体进行无感时区篡改。内置 QUIC 阻断引擎，确保 MitM 100% 触发。
 #!icon=https://raw.githubusercontent.com/WilsonBryanz/scripts/refs/heads/main/icon/Timezone.png
+#!homepage=https://github.com/WilsonBryanz/scripts
 #!raw-url=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone.ipx
 #!author=WilsonBryanz
+#!loon_version=3.2.1(372)
+#!date=2026-10-26 21:18:00
 
 [Rule]
 # 👇 0. 强制核心应用回退 TCP (精准阻断 QUIC，确保解密与脚本 100% 命中)
