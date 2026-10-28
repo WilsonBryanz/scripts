@@ -1,31 +1,31 @@
 /**
- * @name 全自动感知环境伪装 (SRE Level 11 异步阻塞核弹版)
+ * @name 全自动感知环境伪装
  * @author WilsonBryanz
- * @description 严格遵守 Loon 官方文档，强制在 $httpClient 回调结束后调用 $done()，解决探针被内核过早终结导致的死锁问题。
+ * @description 结合标准， WebRTC 真实 IP 防泄漏阻断、Geolocation 经纬度动态伪装、Intl 货币深度劫持。
  */
 
 try {
     const isResponse = typeof $response !== "undefined";
 
-    // 【核心注入引擎】：封装为一个函数，留到最后调用
     function executeInject() {
         let targetTz = $persistentStore.read("SRE_TZ") || "America/Los_Angeles";
         let targetCc = $persistentStore.read("SRE_CC") || "US";
+        let targetLoc = $persistentStore.read("SRE_LOC") || "34.0522,-118.2437"; // 默认洛杉矶经纬度
 
         let langMap = {
-            "US": { l: "en-US", ls: "['en-US', 'en']", al: "en-US,en;q=0.9" },
-            "JP": { l: "ja-JP", ls: "['ja-JP', 'ja', 'en-US', 'en']", al: "ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7" },
-            "GB": { l: "en-GB", ls: "['en-GB', 'en-US', 'en']", al: "en-GB,en-US;q=0.9,en;q=0.8" },
-            "DE": { l: "de-DE", ls: "['de-DE', 'de', 'en-US', 'en']", al: "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7" },
-            "KR": { l: "ko-KR", ls: "['ko-KR', 'ko', 'en-US', 'en']", al: "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7" },
-            "SG": { l: "en-SG", ls: "['en-SG', 'en-US', 'en']", al: "en-SG,en-US;q=0.9,en;q=0.8" },
-            "TW": { l: "zh-TW", ls: "['zh-TW', 'zh-HK', 'zh', 'en-US', 'en']", al: "zh-TW,zh-HK;q=0.9,zh;q=0.8,en-US;q=0.7,en;q=0.6" },
-            "HK": { l: "zh-HK", ls: "['zh-HK', 'zh-TW', 'zh', 'en-US', 'en']", al: "zh-HK,zh-TW;q=0.9,zh;q=0.8,en-US;q=0.7,en;q=0.6" }
+            "US": { l: "en-US", ls: "['en-US', 'en']", al: "en-US,en;q=0.9", cur: "USD" },
+            "JP": { l: "ja-JP", ls: "['ja-JP', 'ja', 'en-US', 'en']", al: "ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7", cur: "JPY" },
+            "GB": { l: "en-GB", ls: "['en-GB', 'en-US', 'en']", al: "en-GB,en-US;q=0.9,en;q=0.8", cur: "GBP" },
+            "DE": { l: "de-DE", ls: "['de-DE', 'de', 'en-US', 'en']", al: "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7", cur: "EUR" },
+            "KR": { l: "ko-KR", ls: "['ko-KR', 'ko', 'en-US', 'en']", al: "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7", cur: "KRW" },
+            "SG": { l: "en-SG", ls: "['en-SG', 'en-US', 'en']", al: "en-SG,en-US;q=0.9,en;q=0.8", cur: "SGD" },
+            "TW": { l: "zh-TW", ls: "['zh-TW', 'zh-HK', 'zh', 'en-US', 'en']", al: "zh-TW,zh-HK;q=0.9,zh;q=0.8,en-US;q=0.7,en;q=0.6", cur: "TWD" },
+            "HK": { l: "zh-HK", ls: "['zh-HK', 'zh-TW', 'zh', 'en-US', 'en']", al: "zh-HK,zh-TW;q=0.9,zh;q=0.8,en-US;q=0.7,en;q=0.6", cur: "HKD" }
         };
         let langCfg = langMap[targetCc] || langMap["US"];
+        let [lat, lon] = targetLoc.split(',').map(Number);
 
         if (!isResponse) {
-            // A. Request API 拦截
             let headers = $request.headers;
             let originalKeys = {};
             for (let key in headers) originalKeys[key.toLowerCase()] = key;
@@ -37,7 +37,6 @@ try {
             
             $done({headers});
         } else {
-            // B. Response HTML 拦截
             let headers = $response.headers;
             let originalKeys = {};
             for (let key in headers) originalKeys[key.toLowerCase()] = key;
@@ -56,16 +55,15 @@ try {
                 <script>
                     (function() {
                         const targetTzName = '${targetTz}';
+                        const fakeLat = ${lat};
+                        const fakeLon = ${lon};
                         const OriginalDate = globalThis.Date;
 
+                        // 1. 时区与时间伪装
                         let targetOffsetMin = 0; 
                         let fakeGmtOffset = "+0000";
                         try {
-                            let format = new Intl.DateTimeFormat('en-US', {
-                                timeZone: targetTzName,
-                                timeZoneName: 'longOffset'
-                            }).format(new OriginalDate()); 
-
+                            let format = new Intl.DateTimeFormat('en-US', { timeZone: targetTzName, timeZoneName: 'longOffset' }).format(new OriginalDate()); 
                             let match = format.match(/GMT([+-])(\\d{2}):?(\\d{2})?/);
                             if (match) {
                                 let sign = match[1] === '+' ? -1 : 1;
@@ -79,7 +77,6 @@ try {
                         const systemOffsetMin = new OriginalDate().getTimezoneOffset();
                         const diffMin = systemOffsetMin - targetOffsetMin; 
                         const fakeTimeOffsetMs = diffMin * 60 * 1000;
-
                         const fakeTzStr = 'GMT' + fakeGmtOffset + ' (' + targetTzName + ')';
                         const tzRegex = /GMT[+-]\\d{4}\\s*\\(.*?\\)/;
 
@@ -103,13 +100,56 @@ try {
                         HookedDate.prototype.getTimezoneOffset = function() { return targetOffsetMin; };
                         globalThis.Date = HookedDate;
 
-                        const __oIntl = Intl.DateTimeFormat;
+                        // 2. Intl 深度防泄漏 (日期 + 货币)
+                        const __oIntlDT = Intl.DateTimeFormat;
                         Intl.DateTimeFormat = function(...args) {
                             let opts = args[1] || {};
                             if (!opts.timeZone) opts.timeZone = targetTzName;
-                            return new __oIntl(args[0], opts);
+                            return new __oIntlDT(args[0], opts);
+                        };
+                        const __oIntlNF = Intl.NumberFormat;
+                        Intl.NumberFormat = function(...args) {
+                            let opts = args[1] || {};
+                            if (!opts.currency && opts.style === 'currency') opts.currency = '${langCfg.cur}';
+                            return new __oIntlNF('${langCfg.l}', opts);
                         };
 
+                        // 3. WebRTC 真实 IP 泄漏阻断
+                        if (typeof window.RTCPeerConnection !== 'undefined') {
+                            window.RTCPeerConnection = function() {
+                                return {
+                                    createDataChannel: () => ({}),
+                                    createOffer: () => Promise.resolve(),
+                                    setLocalDescription: () => Promise.resolve(),
+                                    close: () => {}
+                                };
+                            };
+                        }
+
+                        // 4. Geolocation 动态经纬度伪装
+                        if (navigator.geolocation) {
+                            const mockPosition = {
+                                coords: {
+                                    latitude: fakeLat,
+                                    longitude: fakeLon,
+                                    accuracy: 100,
+                                    altitude: null,
+                                    altitudeAccuracy: null,
+                                    heading: null,
+                                    speed: null
+                                },
+                                timestamp: Date.now()
+                            };
+                            navigator.geolocation.getCurrentPosition = function(success) {
+                                if (success) setTimeout(() => success(mockPosition), 100);
+                            };
+                            navigator.geolocation.watchPosition = function(success) {
+                                if (success) setTimeout(() => success(mockPosition), 100);
+                                return Math.floor(Math.random() * 10000);
+                            };
+                        }
+
+                        // 5. 基础环境指纹锁定与沙盒防护
                         const navProto = Object.getPrototypeOf(navigator);
                         Object.defineProperty(navProto, 'language', { get: () => '${langCfg.l}' });
                         Object.defineProperty(navProto, 'languages', { get: () => ${langCfg.ls} });
@@ -124,6 +164,9 @@ try {
                                     try {
                                         child.contentWindow.Date = globalThis.Date;
                                         child.contentWindow.Intl = globalThis.Intl;
+                                        if (child.contentWindow.RTCPeerConnection) {
+                                            child.contentWindow.RTCPeerConnection = window.RTCPeerConnection;
+                                        }
                                         const ifNavProto = Object.getPrototypeOf(child.contentWindow.navigator);
                                         Object.defineProperty(ifNavProto, 'language', { get: () => '${langCfg.l}' });
                                         Object.defineProperty(ifNavProto, 'languages', { get: () => ${langCfg.ls} });
@@ -147,10 +190,10 @@ try {
         }
     }
 
-    // 【异步控制中心】：控制请求的阻塞与放行
     let lastCheck = $persistentStore.read("SRE_LAST_CHECK");
     let now = Date.now();
-    // 缓存期设为 10 秒，10秒内刷新不发请求直接过，超出10秒切节点则强制等待拉取最新 IP。
+    
+    // 增加抓取 loc (经纬度) 字段
     if (!lastCheck || (now - parseInt(lastCheck)) > 10000) {
         let reqOptions = { url: "https://ipinfo.io/json", timeout: 3000 };
         $httpClient.get(reqOptions, function(error, response, data){
@@ -160,15 +203,14 @@ try {
                     if(obj.timezone && obj.country) {
                         $persistentStore.write(obj.timezone, "SRE_TZ");
                         $persistentStore.write(obj.country, "SRE_CC");
+                        if(obj.loc) $persistentStore.write(obj.loc, "SRE_LOC");
                         $persistentStore.write(now.toString(), "SRE_LAST_CHECK");
                     }
                 } catch(e) {}
             }
-            // ⚠️ 极其关键：必须等 HTTP 探测回调结束后，再执行注入和 $done，防止进程被内核斩杀！
             executeInject();
         });
     } else {
-        // 缓存未过期，瞬间执行并放行
         executeInject();
     }
 
