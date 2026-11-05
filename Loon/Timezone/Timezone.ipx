@@ -5,7 +5,7 @@
 #!raw-url=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone.ipx
 #!author=WilsonBryanz
 #!loon_version=3.2.1(372)
-#!date=2026-11-05 10:30:00
+#!date=2026-11-05 23:30:00
 
 [Rule]
 # 👇 0. 强制核心应用回退 TCP
@@ -32,16 +32,15 @@ AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,chatgpt.com)),REJECT-NO-DROP
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,ippure.com)),REJECT-NO-DROP
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,ipkk.com)),REJECT-NO-DROP
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,ipip.la)),REJECT-NO-DROP
-# ⚠️ 新增 1ms.dog QUIC 阻断
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,1ms.dog)),REJECT-NO-DROP
 
 [Script]
-# 👇 1. App API 劫持层 (已增加 1ms.dog 的正则匹配)
+# 👇 1. App API 劫持层 (正则放宽，全面覆盖 1ms.dog 及其子域名)
 http-request ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks|poe|character|threads|ippure|ipkk|1ms)\.(com|dog)|(claude|perplexity|meta|mistral|x|character)\.ai|(whoer|pixelscan|threads)\.net|twitch\.tv|ipip\.la) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone_Smart.js, requires-body=false, tag=动态时区_API
 
-# 👇 2. Web 网页注入层 (已增加 1ms.dog 的正则匹配)
+# 👇 2. Web 网页注入层 (正则放宽，全面覆盖 1ms.dog 及其子域名)
 http-response ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks|poe|character|threads|ippure|ipkk|1ms)\.(com|dog)|(claude|perplexity|meta|mistral|x|character)\.ai|(whoer|pixelscan|threads)\.net|twitch\.tv|ipip\.la) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone_Smart.js, requires-body=true, tag=动态时区_网页
 
 [Mitm]
-# 👇 3. 证书解密白名单 (⚠️ 已加入 1ms.dog，确保流量被彻底解密并篡改)
+# 👇 3. 证书解密白名单
 hostname = midjourney.com, *.midjourney.com, linkedin.com, *.linkedin.com, browserleaks.com, *.browserleaks.com, whoer.net, *.whoer.net, pixelscan.net, *.pixelscan.net, twitch.tv, *.twitch.tv, poe.com, *.poe.com, character.ai, *.character.ai, threads.net, *.threads.net, reddit.com, *.reddit.com, discord.com, *.discord.com, ippure.com, *.ippure.com, ipkk.com, *.ipkk.com, ipip.la, *.ipip.la, 1ms.dog, *.1ms.dog
