@@ -1,14 +1,13 @@
 #!name=全端节点动态时区伪装 (国际白名单版)
-#!desc=对包含国际头部 AI、社媒及流媒体进行无感时区篡改。内置 QUIC 阻断引擎，新增 1MS.DOG 等顶级风控靶场防护。
+#!desc=对包含国际头部 AI、社媒及流媒体进行无感时区篡改。内置 QUIC 阻断引擎。
 #!icon=https://raw.githubusercontent.com/WilsonBryanz/scripts/refs/heads/main/icon/Timezone.png
 #!homepage=https://github.com/WilsonBryanz/scripts
 #!raw-url=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone.ipx
 #!author=WilsonBryanz
 #!loon_version=3.2.1(372)
-#!date=2026-11-05 23:30:00
+#!date=2026-11-06 10:00:00
 
 [Rule]
-# 👇 0. 强制核心应用回退 TCP
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-KEYWORD,google)),REJECT-NO-DROP
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-KEYWORD,youtube)),REJECT-NO-DROP
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-KEYWORD,meta)),REJECT-NO-DROP
@@ -32,15 +31,13 @@ AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,chatgpt.com)),REJECT-NO-DROP
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,ippure.com)),REJECT-NO-DROP
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,ipkk.com)),REJECT-NO-DROP
 AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,ipip.la)),REJECT-NO-DROP
-AND,((PROTOCOL,UDP),(DEST-PORT,443),(DOMAIN-SUFFIX,1ms.dog)),REJECT-NO-DROP
+# 删除了 1ms.dog 的 QUIC 阻断
 
 [Script]
-# 👇 1. App API 劫持层 (正则放宽，全面覆盖 1ms.dog 及其子域名)
-http-request ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks|poe|character|threads|ippure|ipkk|1ms)\.(com|dog)|(claude|perplexity|meta|mistral|x|character)\.ai|(whoer|pixelscan|threads)\.net|twitch\.tv|ipip\.la) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone_Smart.js, requires-body=false, tag=动态时区_API
-
-# 👇 2. Web 网页注入层 (正则放宽，全面覆盖 1ms.dog 及其子域名)
-http-response ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks|poe|character|threads|ippure|ipkk|1ms)\.(com|dog)|(claude|perplexity|meta|mistral|x|character)\.ai|(whoer|pixelscan|threads)\.net|twitch\.tv|ipip\.la) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone_Smart.js, requires-body=true, tag=动态时区_网页
+# 正则中删除了 1ms\.dog
+http-request ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks|poe|character|threads|ippure|ipkk)\.com|(claude|perplexity|meta|mistral|x|character)\.ai|(whoer|pixelscan|threads)\.net|twitch\.tv|ipip\.la) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone_Smart.js, requires-body=false, tag=动态时区_API
+http-response ^https?:\/\/(.+\.)?((openai|chatgpt|anthropic|midjourney|facebook|instagram|x|twitter|reddit|discord|snapchat|pinterest|youtube|netflix|disneyplus|hulu|max|primevideo|meta|grok|linkedin|browserleaks|poe|character|threads|ippure|ipkk)\.com|(claude|perplexity|meta|mistral|x|character)\.ai|(whoer|pixelscan|threads)\.net|twitch\.tv|ipip\.la) script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/main/Loon/Timezone/Timezone_Smart.js, requires-body=true, tag=动态时区_网页
 
 [Mitm]
-# 👇 3. 证书解密白名单
-hostname = midjourney.com, *.midjourney.com, linkedin.com, *.linkedin.com, browserleaks.com, *.browserleaks.com, whoer.net, *.whoer.net, pixelscan.net, *.pixelscan.net, twitch.tv, *.twitch.tv, poe.com, *.poe.com, character.ai, *.character.ai, threads.net, *.threads.net, reddit.com, *.reddit.com, discord.com, *.discord.com, ippure.com, *.ippure.com, ipkk.com, *.ipkk.com, ipip.la, *.ipip.la, 1ms.dog, *.1ms.dog
+# 列表中删除了 1ms.dog
+hostname = midjourney.com, *.midjourney.com, linkedin.com, *.linkedin.com, browserleaks.com, *.browserleaks.com, whoer.net, *.whoer.net, pixelscan.net, *.pixelscan.net, twitch.tv, *.twitch.tv, poe.com, *.poe.com, character.ai, *.character.ai, threads.net, *.threads.net, reddit.com, *.reddit.com, discord.com, *.discord.com, ippure.com, *.ippure.com, ipkk.com, *.ipkk.com, ipip.la, *.ipip.la
