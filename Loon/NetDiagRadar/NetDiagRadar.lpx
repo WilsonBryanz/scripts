@@ -1,0 +1,34 @@
+#!name = 网络诊断雷达
+#!desc = 定时诊断出口 IP / 纯净度 / 延迟 / QUIC / 流媒体 / AI 可用性，写入快照并推送通知；小组件数据地址 http://1.1.1.1/radar/data
+#!author = 网络诊断雷达（Loon 版）
+#!system = iOS,iPadOS
+#!system_version = 15
+#!loon_version = 3.5.1(983)
+#!date = 2026-11-12
+#!tag = 小组件,网络
+#!type = normal
+
+# ---------- 用法 ----------
+# 1. 把 网络诊断雷达.js 放在插件同目录（或把下面几处 script("网络诊断雷达.js") 换成它的 raw 地址）。
+# 2. 安装本插件。
+# 3. Scripting 里打开「网络诊断雷达 Loon」→ 设置 → 快照地址填 http://1.1.1.1/radar/data
+#    「Loon 插件」一节可填参数后点「推送到 Loon」/「让 Loon 诊断并刷新」。
+# 4. 手动验证：浏览器访问一次 http://1.1.1.1/radar/run，应返回 JSON。
+#
+# 参数说明见下方 [Argument]，也可以在 App 里改（会 POST 到 /radar/opts 覆盖）。
+
+[Argument]
+cron = input,"*/15 * * * *",type=string,tag=诊断频率,desc=Cron 表达式，支持五段或六段
+node = input,"",type=string,tag=指定出口,desc=留空跟随当前；可填 DIRECT、节点名或策略组名
+media = input,"",type=string,tag=流媒体策略组,desc=流媒体探测走这个策略组
+ai = input,"",type=string,tag=AI 策略组,desc=AI 探测走这个策略组
+mask = switch,false,type=boolean,tag=IP 打码,desc=通知与快照里对 IP 打码
+notify = switch,true,type=boolean,tag=推送通知,desc=每次诊断完推一条汇总
+debug = switch,false,type=boolean,tag=详细日志
+enabled = switch,true,type=boolean,tag=启用本插件
+
+[Script]
+cron ${cron} then script("网络诊断雷达.js", {${node}, ${media}, ${ai}, ${mask}, ${notify}, ${debug}}) with enable=${enabled}, tag="网络诊断雷达", img_url="dot.radiowaves.left.and.right", timeout=60
+network-changed then script("网络诊断雷达.js", {${node}, ${media}, ${ai}, ${mask}, ${notify}, ${debug}}) with enable=${enabled}, tag="网络切换复测", img_url="wifi.system", timeout=60
+request if ${url} ~= /^http:\/\/(1\.1\.1\.1|8\.8\.8\.8)\/radar\/(data|run)(\?|$)/i then script("网络诊断雷达.js") with enable=${enabled}, tag="网络诊断雷达数据", img_url="dot.radiowaves.left.and.right", timeout=90
+request if ${url} ~= /^http:\/\/(1\.1\.1\.1|8\.8\.8\.8)\/radar\/opts$/i && ${request.method} == "POST" then script("网络诊断雷达.js") with enable=${enabled}, requires_body=true, tag="网络诊断雷达设置", img_url="gearshape.system", timeout=30
