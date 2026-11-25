@@ -1,5 +1,5 @@
 /**
- * @name TikTok 智能换区 (节点联动版)
+ * @name TikTok 智能换区 (Loon 节点联动修复版)
  * @description 根据 Proxy Group 选中的节点，自动切换 新、美、日、台、韩、英、欧洲等地区
  * @author WilsonBryanz
  * @version 1.1.1
@@ -8,42 +8,48 @@
  * @requires-body false
  */
 
-let proxyName = $agent ? $agent.name : "";
+function getTikTokNode() {
+    try {
+        const getter = $config && ($config.getSelectedPolicy || $config.getPolicy);
+        if (getter) {
+            let cur = getter.call($config, "TikTok") || "";
+            // 向下追踪嵌套策略组（如 TikTok -> 美国住宅 -> 具体节点）
+            for (let i = 0; i < 5; i++) {
+                let next = getter.call($config, cur);
+                if (!next || next === cur) break;
+                cur = next;
+            }
+            return String(cur);
+        }
+    } catch (e) {}
+    return "";
+}
 
-// 🇸🇬 新加坡区 (Singapore) - 默认兜底设置
+const upperProxy = getTikTokNode().toUpperCase();
+
+// 默认新加坡区兜底
 let targetRegion = "SG";
 let mcc = "52504";
 let tz = "Asia/Singapore";
 
-let upperProxy = proxyName.toUpperCase();
-
-if (upperProxy.includes("美") || upperProxy.includes("US") || upperProxy.includes("UNITED STATES")) {
-    // 🇺🇸 美国区 (United States)
+if (/美|\bUS\b|UNITED STATES/.test(upperProxy)) {
     targetRegion = "US"; mcc = "310410"; tz = "America/New_York";
-} else if (upperProxy.includes("日") || upperProxy.includes("JP") || upperProxy.includes("东京") || upperProxy.includes("大阪")) {
-    // 🇯🇵 日本区 (Japan)
+} else if (/日|\bJP\b|东京|大阪/.test(upperProxy)) {
     targetRegion = "JP"; mcc = "44010"; tz = "Asia/Tokyo";
-} else if (upperProxy.includes("台") || upperProxy.includes("TW") || upperProxy.includes("台湾") || upperProxy.includes("台北")) {
-    // 🇹🇼 台湾区 (Taiwan)
+} else if (/台|\bTW\b|台北/.test(upperProxy)) {
     targetRegion = "TW"; mcc = "46692"; tz = "Asia/Taipei";
-} else if (upperProxy.includes("韩") || upperProxy.includes("KR") || upperProxy.includes("韩国") || upperProxy.includes("首尔")) {
-    // 🇰🇷 韩国区 (South Korea)
+} else if (/韩|\bKR\b|首尔/.test(upperProxy)) {
     targetRegion = "KR"; mcc = "45005"; tz = "Asia/Seoul";
-} else if (upperProxy.includes("英") || upperProxy.includes("UK") || upperProxy.includes("GB") || upperProxy.includes("英国") || upperProxy.includes("伦敦")) {
-    // 🇬🇧 英国区 (United Kingdom)
-    targetRegion = "GB"; mcc = "23430"; tz = "Europe/London";
-} else if (upperProxy.includes("欧") || upperProxy.includes("EU") || upperProxy.includes("德") || upperProxy.includes("法")) {
-    // 🇪🇺 泛欧洲节点 (兜底映射至英国区内容)
+} else if (/英|\bUK\b|\bGB\b|伦敦|欧|\bEU\b|德|法/.test(upperProxy)) {
     targetRegion = "GB"; mcc = "23430"; tz = "Europe/London";
 }
 
 let url = $request.url;
 if (url.includes("?")) {
-    url = url.replace(/(region=)[A-Z]{2}/g, '$1' + targetRegion)
-             .replace(/(mcc_mnc=)[0-9]{5}/g, '$1' + mcc)
-             .replace(/(carrier_region=)[A-Z]{2}/g, '$1' + targetRegion)
-             .replace(/(timezone_name=)[^&]+/g, '$1' + encodeURIComponent(tz))
-             .replace(/(sys_region=)[A-Z]{2}/g, '$1' + targetRegion);
+    url = url
+        .replace(/([?&](?:carrier_|sys_|account_|op_|current_)?region=)[A-Za-z]{2}(?=&|$)/g, "$1" + targetRegion)
+        .replace(/([?&]mcc_mnc=)[0-9]{5,6}(?=&|$)/g, "$1" + mcc)
+        .replace(/([?&]timezone_name=)[^&]+/g, "$1" + encodeURIComponent(tz));
     $done({ url });
 } else {
     $done({});
