@@ -95,7 +95,7 @@ IP-ASN,138699,PROXY,no-resolve
 
 [Script]
 # 👇--- TikTok 节点联动动态换区 (支持 新、美、日、台、韩、英、欧 自动切换) ---
-http-request ^https?:\/\/(.+\.)?(tiktokv(\.us|\.eu)?|byteoversea|tik-tokapi)\.com\/.+ script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/refs/heads/main/Loon/TikTok/TikTok_Switcher.js, requires-body=false, tag=TikTok换区
+# http-request ^https?:\/\/(.+\.)?(tiktokv(\.us|\.eu)?|byteoversea|tik-tokapi)\.com\/.+ script-path=https://raw.githubusercontent.com/WilsonBryanz/scripts/refs/heads/main/Loon/TikTok/TikTok_Switcher.js, requires-body=false, tag=TikTok换区
 
 [Mitm]
-hostname = *.tiktokv.com, *.tiktokv.us, *.tiktokv.eu, *.byteoversea.com, *.tik-tokapi.com
+# hostname = *.tiktokv.com, *.tiktokv.us, *.tiktokv.eu, *.byteoversea.com, *.tik-tokapi.com
